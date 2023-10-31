@@ -5,6 +5,26 @@ import subprocess
 import json
 from typing import List
 from fastapi.encoders import jsonable_encoder
+import psutil
+import uuid
+import os
+
+def model_event_status(model_id: str):
+    """
+    This function is responsible to check the status of the model, the status could be running, finished, and stopped
+    """
+    pid = int(model_id.split("_")[-1])
+    response = dict()
+    process = psutil.Process(pid)
+    pids = psutil.pids()
+    if pid in pids:
+        response["msg"] = model_id + " is still fine tuning"
+    else:
+        if os.path.exists("_".join(model_id.split("_")[:-1]):
+            response["msg"] = model_id + " is finished"
+        else:
+            response["msg"] = model_id + " stopped due to an error"
+    return response
 
 
 def check_available_GPUs():
@@ -35,10 +55,12 @@ def finetune_model(training_data: InputData, model_id: str):
         response["gpu_type"] = ""
         response["model_id"] = model_id
     else:
+        uuid_n = str(uuid.uuid4())
         response["gpu_id"] = gpu_id
         response["message"] = "Model Finetunning is starting ..."
-        response["gpu_type"] = torch.cuda.get_device_name(gpu_id)
-        response["model_id"] = model_id
+        response["gpu_type"] = "tesla"
+        response["model_id"] = model_id + "_" + str(uuid_n)
+        
         with open("data/alpaca_data_en_52k.json", "w") as outfile:
             outfile.write("[")
             for idx,json_object in enumerate(training_data):
@@ -70,7 +92,8 @@ def finetune_model(training_data: InputData, model_id: str):
         cmds = ['export CUDA_VISIBLE_DEVICES='+str(gpu_id),
                       ' '.join(train_cmd)]
         
-        process = subprocess.Popen(";".join(cmds), shell = True)
-        
+        process = subprocess.Popen(";".join(cmds), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process_id = process.pid
+        response["model_id"] = response["model_id"] + "_" + str(process_id)
     return response
 
