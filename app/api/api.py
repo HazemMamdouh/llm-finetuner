@@ -17,12 +17,19 @@ def model_event_status(model_id: str):
     response = dict()
     process = psutil.Process(pid)
     pids = psutil.pids()
-    if pid in pids:
-        print(process.status())
+    if os.path.exists("_".join(model_id.split("_")[:-1])+"/all_results.json"):
+        response["msg"] = model_id + " is finished"
+    elif os.path.exists("_".join(model_id.split("_")[:-1])):
         response["msg"] = model_id + " is still fine tuning"
-    else:
-        if os.path.exists("_".join(model_id.split("_")[:-1])):
-            response["msg"] = model_id + " is finished"
+    else    
+        if pid in pids:
+            stats = str(process.status())
+            if stats == "sleeping" or stats == "running":
+                response["msg"] = model_id + " is still fine tuning"
+            elif stats == "zombie":
+                response["msg"] = model_id + " is finished"
+            else:
+                response["msg"] = model_id + " stopped due to an error"
         else:
             response["msg"] = model_id + " stopped due to an error"
     return response
