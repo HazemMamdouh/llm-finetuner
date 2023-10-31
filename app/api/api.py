@@ -2,6 +2,9 @@ import torch
 from app.modules.data_model import InputData, OutputData
 import jsonlines
 import subprocess
+import json
+from typing import List
+from fastapi.encoders import jsonable_encoder
 
 
 def check_available_GPUs():
@@ -25,19 +28,23 @@ def finetune_model(training_data: InputData, model_id: str):
     This function determines the gpu that could be utilized and start the process of training as a background task
     """
     gpu_id = check_available_GPUs()
-    response = OutputData()
+    response = dict()
     if gpu_id < 0 :
-        response.gpu_id = -1
-        response.message = "Training could not take place since there is no gpu vacany"
-        response.gpu_type = ""
-        response.gpu_type = model_id
+        response["gpu_id"] = -1
+        response["message"] = "Training could not take place since there is no gpu vacany"
+        response["gpu_type"] = ""
+        response["model_id"] = model_id
     else:
-        response.gpu_id = gpu_id
-        response.message = "Model Finetunning is starting ..."
-        response.gpu_type = torch.cuda.get_device_name(gpu_id)
-        response.gpu_type = model_id
-        with jsonlines.open('data/alpaca_data_en_52k.json', 'w') as writer:
-            writer.write_all(training_data)
+        response["gpu_id"] = gpu_id
+        response["message"] = "Model Finetunning is starting ..."
+        response["gpu_type"] = torch.cuda.get_device_name(gpu_id)
+        response["model_id"] = model_id
+        with open("data/alpaca_data_en_52k.json", "w") as outfile:
+            outfile.write("[")
+            for json_object in training_data:
+                json.dump(jsonable_encoder(json_object), outfile,indent = 4)
+                outfile.write(",\n")
+            outfile.write("]")
         
         process = subprocess.Popen(["CUDA_VISIBLE_DEVICES="+str(gpu_id), "python","src/train_bash.py --model_name_or_path 'openlm-research/open_llama_3b_v2' --dataset alpaca_en \
         --template default \

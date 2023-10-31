@@ -39,6 +39,6 @@ def finetune_model (payload: List[InputData], model_id: str):
     define endpoint to initiate the fine tuning of the LLM with the given data
 
     """
-    payload = payload.dict()
+    response = api.finetune_model(payload, model_id)
 
-    return api.start_finetuning(payload, model_id)
+    return response
