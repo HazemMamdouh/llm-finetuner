@@ -21,7 +21,7 @@ def model_event_status(model_id: str):
         response["msg"] = model_id + " is finished"
     elif os.path.exists("_".join(model_id.split("_")[:-1])):
         response["msg"] = model_id + " is still fine tuning"
-    else    
+    else:
         if pid in pids:
             stats = str(process.status())
             if stats == "sleeping" or stats == "running":
