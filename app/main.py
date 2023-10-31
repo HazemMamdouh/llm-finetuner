@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-
+from typing import  List
 from app.api import api
 from app.modules.data_model import InputData, OutputData
 
@@ -34,7 +34,7 @@ def check_model_status(model_id: str):
 
 
 @app.post("/models/{model_id}/train", response_model=OutputData)
-def finetune_model (payload: InputData, model_id: str):
+def finetune_model (payload: List[InputData], model_id: str):
     """
     define endpoint to initiate the fine tuning of the LLM with the given data
 
