@@ -91,7 +91,7 @@ def finetune_model(training_data: InputData, model_id: str):
         cmds = ['export CUDA_VISIBLE_DEVICES='+str(gpu_id),
                       ' '.join(train_cmd)]
         
-        process = subprocess.Popen(";".join(cmds), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(";".join(cmds), share=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process_id = process.pid
         response["model_id"] = response["model_id"] + "_" + str(process_id)
     return response
