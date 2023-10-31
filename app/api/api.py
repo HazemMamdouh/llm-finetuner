@@ -18,6 +18,7 @@ def model_event_status(model_id: str):
     process = psutil.Process(pid)
     pids = psutil.pids()
     if pid in pids:
+        print(process.status())
         response["msg"] = model_id + " is still fine tuning"
     else:
         if os.path.exists("_".join(model_id.split("_")[:-1])):
