@@ -45,24 +45,28 @@ def finetune_model(training_data: InputData, model_id: str):
                 json.dump(jsonable_encoder(json_object), outfile,indent = 4)
                 outfile.write(",\n")
             outfile.write("]")
+        train_cmd = ["python", "src/train_bash.py", "--model_name_or_path", 'openlm-research/open_llama_3b_v2',
+                    "--dataset","alpaca_en",
+                    "--template","default",
+                    "--stage","sft",
+                    "--do_train",
+                    "--finetuning_type","lora",
+                    "--lora_target","q_proj,v_proj",
+                    "--output_dir", model_id,
+                    "--overwrite_cache",
+                    "--per_device_train_batch_size","4",
+                    "--gradient_accumulation_steps","4",
+                    "--lr_scheduler_type","cosine",
+                    "--logging_steps","10",
+                    "--save_steps","1000",
+                    "--learning_rate","5e-5",
+                    "--num_train_epochs","3.0",
+                    "--plot_loss",
+                    "--fp16"]    
+        cmds = ['export CUDA_VISIBLE_DEVICES='+str(gpu_id),
+                      ' '.join(train_cmd)]
         
-        process = subprocess.Popen(["CUDA_VISIBLE_DEVICES="+str(gpu_id), "python","src/train_bash.py --model_name_or_path 'openlm-research/open_llama_3b_v2' --dataset alpaca_en \
-        --template default \
-        --stage sft \
-        --do_train \
-        --finetuning_type lora \
-        --lora_target q_proj,v_proj \
-        --output_dir "+model_id+" \
-        --overwrite_cache \
-        --per_device_train_batch_size 4 \
-        --gradient_accumulation_steps 4 \
-        --lr_scheduler_type cosine \
-        --logging_steps 10 \
-        --save_steps 1000 \
-        --learning_rate 5e-5 \
-        --num_train_epochs 3.0 \
-        --plot_loss \
-        --fp16"])
+        process = subprocess.Popen(";".join(cmds), shell = True)
         
     return response
 
