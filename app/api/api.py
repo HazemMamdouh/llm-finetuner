@@ -65,7 +65,6 @@ def finetune_model(training_data: InputData, model_id: str):
             outfile.write("[")
             for idx,json_object in enumerate(training_data):
                 json.dump(jsonable_encoder(json_object), outfile,indent = 4)
-                print (idx, len(training_data))
                 if idx +1 == len(training_data):
                     outfile.write("\n")
                 else:
