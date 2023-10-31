@@ -41,9 +41,13 @@ def finetune_model(training_data: InputData, model_id: str):
         response["model_id"] = model_id
         with open("data/alpaca_data_en_52k.json", "w") as outfile:
             outfile.write("[")
-            for json_object in training_data:
+            for idx,json_object in enumerate(training_data):
                 json.dump(jsonable_encoder(json_object), outfile,indent = 4)
-                outfile.write(",\n")
+                print (idx, len(training_data))
+                if idx +1 == len(training_data):
+                    outfile.write("\n")
+                else:
+                    outfile.write(",\n")
             outfile.write("]")
         train_cmd = ["python", "src/train_bash.py", "--model_name_or_path", 'openlm-research/open_llama_3b_v2',
                     "--dataset","alpaca_en",
