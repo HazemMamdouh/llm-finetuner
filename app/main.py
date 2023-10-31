@@ -1,9 +1,19 @@
 from fastapi import FastAPI
 
 from app.api import api
+from app.modules.data_model import InputData, OutputData
+
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 @app.get("/alive")
 def alive_check():
@@ -24,7 +34,7 @@ def check_model_status(model_id: str):
 
 
 @app.post("/models/{model_id}/train", response_model=OutputData)
-def finetune_model (payload: InputData[], model_id: str):
+def finetune_model (payload: InputData, model_id: str):
     """
     define endpoint to initiate the fine tuning of the LLM with the given data
 

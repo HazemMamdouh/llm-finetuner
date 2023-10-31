@@ -20,7 +20,7 @@ def check_available_GPUs():
         
     
 
-def finetune_model(training_data: InputData[], model_id: str):
+def finetune_model(training_data: InputData, model_id: str):
     """
     This function determines the gpu that could be utilized and start the process of training as a background task
     """
@@ -32,14 +32,18 @@ def finetune_model(training_data: InputData[], model_id: str):
         response.gpu_type = ""
         response.gpu_type = model_id
     else:
-        esponse.gpu_id = gpu_id
+        response.gpu_id = gpu_id
         response.message = "Model Finetunning is starting ..."
         response.gpu_type = torch.cuda.get_device_name(gpu_id)
         response.gpu_type = model_id
         with jsonlines.open('data/alpaca_data_en_52k.json', 'w') as writer:
             writer.write_all(training_data)
         
-        process = subprocess.Popen(["CUDA_VISIBLE_DEVICES="+str(gpu_id), "python","src/train_bash.py --model_name_or_path 'openlm-research/open_llama_3b_v2' --dataset alpaca_en --template default --output_dir "sample" --stage sft --do_train --finetuning_type lora \
+        process = subprocess.Popen(["CUDA_VISIBLE_DEVICES="+str(gpu_id), "python","src/train_bash.py --model_name_or_path 'openlm-research/open_llama_3b_v2' --dataset alpaca_en \
+        --template default \
+        --stage sft \
+        --do_train \
+        --finetuning_type lora \
         --lora_target q_proj,v_proj \
         --output_dir "+model_id+" \
         --overwrite_cache \
@@ -52,5 +56,6 @@ def finetune_model(training_data: InputData[], model_id: str):
         --num_train_epochs 3.0 \
         --plot_loss \
         --fp16"])
+        
     return response
 

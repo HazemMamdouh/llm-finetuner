@@ -8,7 +8,7 @@ class InputData(BaseModel):
     output: str
 
 
-class OutputData(BaseModel)
+class OutputData(BaseModel):
     message: str
     gpu_id: int
     gpu_type: str
