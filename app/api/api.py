@@ -20,7 +20,7 @@ def model_event_status(model_id: str):
     if pid in pids:
         response["msg"] = model_id + " is still fine tuning"
     else:
-        if os.path.exists("_".join(model_id.split("_")[:-1]):
+        if os.path.exists("_".join(model_id.split("_")[:-1])):
             response["msg"] = model_id + " is finished"
         else:
             response["msg"] = model_id + " stopped due to an error"
@@ -70,14 +70,14 @@ def finetune_model(training_data: InputData, model_id: str):
                 else:
                     outfile.write(",\n")
             outfile.write("]")
-        train_cmd = ["python", "src/train_bash.py", "--model_name_or_path", 'openlm-research/open_llama_3b_v2',
+        train_cmd = ["python", "src/train_bash.py", "--model_name_or_path", "'openlm-research/open_llama_3b_v2'",
                     "--dataset","alpaca_en",
                     "--template","default",
                     "--stage","sft",
                     "--do_train",
                     "--finetuning_type","lora",
                     "--lora_target","q_proj,v_proj",
-                    "--output_dir", model_id,
+                    "--output_dir", response["model_id"],
                     "--overwrite_cache",
                     "--per_device_train_batch_size","4",
                     "--gradient_accumulation_steps","4",
