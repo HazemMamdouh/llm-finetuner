@@ -70,7 +70,7 @@ def finetune_model(training_data: InputData, model_id: str):
                 else:
                     outfile.write(",\n")
             outfile.write("]")
-        train_cmd = ["python", "src/train_bash.py", "--model_name_or_path", "'openlm-research/open_llama_3b_v2'",
+        train_cmd = ["python", "./src/train_bash.py", "--model_name_or_path", "'openlm-research/open_llama_3b_v2'",
                     "--dataset","alpaca_en",
                     "--template","default",
                     "--stage","sft",
@@ -91,7 +91,7 @@ def finetune_model(training_data: InputData, model_id: str):
         cmds = ['export CUDA_VISIBLE_DEVICES='+str(gpu_id),
                       ' '.join(train_cmd)]
         
-        process = subprocess.Popen(";".join(cmds), share=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(";".join(cmds), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process_id = process.pid
         response["model_id"] = response["model_id"] + "_" + str(process_id)
     return response
