@@ -8,6 +8,7 @@ from fastapi.encoders import jsonable_encoder
 import psutil
 import uuid
 import os
+import shutil
 
 def model_event_status(model_id: str):
     """
@@ -26,8 +27,6 @@ def model_event_status(model_id: str):
             stats = str(process.status())
             if stats == "sleeping" or stats == "running":
                 response["msg"] = model_id + " is still fine tuning"
-            elif stats == "zombie":
-                response["msg"] = model_id + " is finished"
             else:
                 response["msg"] = model_id + " stopped due to an error"
         else:
@@ -69,7 +68,7 @@ def finetune_model(training_data: InputData, model_id: str):
         response["gpu_type"] = torch.cuda.get_device_name(gpu_id)
         response["model_id"] = model_id + "_" + str(uuid_n)
         
-        with open("data/alpaca_data_en_52k_"+str(uuid_n)+".json", "w") as outfile:
+        with open("data/alpaca_data_en_52k.json", "w") as outfile:
             outfile.write("[")
             for idx,json_object in enumerate(training_data):
                 json.dump(jsonable_encoder(json_object), outfile,indent = 4)
@@ -78,17 +77,12 @@ def finetune_model(training_data: InputData, model_id: str):
                 else:
                     outfile.write(",\n")
             outfile.write("]")
-            
-            with open("./data/dataset_info.json", "r") as f:
-               dataset_info = json.load(f)
-            dataset_info["alpaca_en_"+str(uuid_n)] = dataset_info["alpaca_en"]
-            dataset_info["alpaca_en_"+str(uuid_n)]["file_name"] = "data/alpaca_data_en_52k_"+str(uuid_n)+".json"
-            with open("./data/dataset_info.json", "w") as f:
-                json.dump(dataset_info, f)
+
+        shutil.copy("data/alpaca_data_en_52k.json", "data/alpaca_data_en_52k_"+str(uuid_n)+".json")
 
                 
         train_cmd = ["python", "./src/train_bash.py", "--model_name_or_path", "'openlm-research/open_llama_3b_v2'",
-                    "--dataset","alpaca_en_"+str(uuid_n),
+                    "--dataset","alpaca_en",
                     "--template","default",
                     "--stage","sft",
                     "--do_train",
