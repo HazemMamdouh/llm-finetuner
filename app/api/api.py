@@ -66,10 +66,10 @@ def finetune_model(training_data: InputData, model_id: str):
         uuid_n = str(uuid.uuid4())
         response["gpu_id"] = gpu_id
         response["message"] = "Model Finetunning is starting ..."
-        response["gpu_type"] = "tesla"
+        response["gpu_type"] = torch.cuda.get_device_name(gpu_id)
         response["model_id"] = model_id + "_" + str(uuid_n)
         
-        with open("data/alpaca_data_en_52k.json", "w") as outfile:
+        with open("data/alpaca_data_en_52k_"+str(uuid_n)+".json", "w") as outfile:
             outfile.write("[")
             for idx,json_object in enumerate(training_data):
                 json.dump(jsonable_encoder(json_object), outfile,indent = 4)
@@ -78,8 +78,17 @@ def finetune_model(training_data: InputData, model_id: str):
                 else:
                     outfile.write(",\n")
             outfile.write("]")
+            
+            with open("./data/dataset_info.json", "r") as f:
+               dataset_info = json.load(f)
+            dataset_info["alpaca_en_"+str(uuid_n)] = dataset_info["alpaca_en"]
+            dataset_info["alpaca_en_"+str(uuid_n)]["file_name"] = "data/alpaca_data_en_52k_"+str(uuid_n)+".json"
+            with open("./data/dataset_info.json", "w") as f:
+                json.dump(dataset_info, f)
+
+                
         train_cmd = ["python", "./src/train_bash.py", "--model_name_or_path", "'openlm-research/open_llama_3b_v2'",
-                    "--dataset","alpaca_en",
+                    "--dataset","alpaca_en_"+str(uuid_n),
                     "--template","default",
                     "--stage","sft",
                     "--do_train",
